@@ -1,34 +1,9 @@
 ---
-title: Computer Vision Papers
-description: Computer vision and image processing research papers
-tags: [papers, CV, computer-vision]
+title: Computer Vision
+description: Vision papers worth revisiting
+tags: [papers, CV]
 ---
 
-# 👁️ Computer Vision Papers
+# Computer Vision
 
-컴퓨터 비전 분야의 연구 논문들을 정리한 공간입니다.
-
-## 📂 하위 카테고리
-
-### 🖼️ Image Classification
-- CNN Architectures
-- Vision Transformers
-- Efficient Networks
-
-### 🎯 Object Detection
-- YOLO Series
-- R-CNN Family
-- Transformer-based Detection
-
-### 🎨 Generative Models
-- GANs
-- Diffusion Models
-- VAEs
-
-### 🔍 Image Segmentation
-- Semantic Segmentation
-- Instance Segmentation
-- Panoptic Segmentation
-
-## 🏆 Landmark Papers
-- 추후 추가 예정...
+분류/검출/분할/생성 전반. 최신 성능보다 아이디어를 중심으로 짧게 메모합니다.

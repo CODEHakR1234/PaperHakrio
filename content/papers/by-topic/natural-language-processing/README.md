@@ -1,34 +1,9 @@
 ---
-title: Natural Language Processing Papers
-description: NLP and language model research papers
-tags: [papers, NLP, language-models]
+title: NLP
+description: Language and LLM papers
+tags: [papers, NLP]
 ---
 
-# 🗣️ Natural Language Processing Papers
+# NLP
 
-자연어처리 분야의 연구 논문들을 정리한 공간입니다.
-
-## 📂 하위 카테고리
-
-### 🤖 Large Language Models
-- GPT Series
-- BERT Family
-- T5 and Variants
-
-### 🔄 Transformers
-- Attention Mechanisms
-- Architecture Improvements
-- Efficiency Optimizations
-
-### 💬 Dialogue Systems
-- Conversational AI
-- Chatbots
-- Question Answering
-
-### 🌍 Multimodal
-- Vision-Language Models
-- Speech-Text Models
-- Cross-modal Understanding
-
-## 🏆 Foundational Papers
-- 추후 추가 예정...
+LLM/Transformer 관련 노트를 주로 모읍니다. 모델 구조, 효율화, 프롬프트/튜닝 관련 내용 위주.

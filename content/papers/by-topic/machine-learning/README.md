@@ -1,29 +1,9 @@
 ---
-title: Machine Learning Papers
-description: Core machine learning research papers
-tags: [papers, ML, machine-learning]
+title: Machine Learning
+description: ML papers I care about
+tags: [papers, ML]
 ---
 
-# 🤖 Machine Learning Papers
+# Machine Learning
 
-머신러닝 분야의 핵심 연구 논문들을 정리한 공간입니다.
-
-## 📂 하위 카테고리
-
-### 🧠 Deep Learning
-- Neural Network Architectures
-- Training Techniques
-- Optimization Methods
-
-### 📊 Classical ML
-- Supervised Learning
-- Unsupervised Learning
-- Reinforcement Learning
-
-### 🔬 Theory
-- Learning Theory
-- Statistical Learning
-- Information Theory
-
-## 🏆 Must-Read Papers
-- 추후 추가 예정...
+학습 알고리즘 전반. 딥러닝은 구조/학습/최적화로 나눠서 봅니다. 고전 ML/이론도 필요할 때만.
