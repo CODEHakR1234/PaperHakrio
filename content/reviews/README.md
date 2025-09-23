@@ -1,7 +1,8 @@
 ---
-title: Reviews
+title: Reviews guidance
 description: Longer write-ups after careful reads
-tags: [reviews]
+tags:
+  - reviews
 ---
 
 # Reviews

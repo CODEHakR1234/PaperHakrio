@@ -1,7 +1,8 @@
 ---
-title: Resources
+title: Resources List
 description: Sources and tools I actually use
-tags: [resources]
+tags:
+  - resources
 ---
 
 실제로 자주 쓰는 곳만 적습니다.

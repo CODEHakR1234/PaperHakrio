@@ -1,7 +1,8 @@
 ---
-title: Papers
+title: To Read Papers List
 description: Papers I read, by year and topic
-tags: [papers]
+tags:
+  - papers
 ---
 
 읽은 논문을 간단히 요약하고, 다시 볼 만한 포인트만 남깁니다.

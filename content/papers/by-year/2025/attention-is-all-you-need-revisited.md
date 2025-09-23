@@ -1,11 +1,17 @@
 ---
-title: "Attention Is All You Need (간단 정리)"
-description: "Transformer의 핵심 아이디어와 영향만 짧게"
-tags: [paper, NLP, transformer, attention, year-2017, classic]
-authors: "Vaswani et al."
-venue: "NeurIPS 2017"
+title: Attention Is All You Need
+description: Transformer의 핵심 아이디어와 영향만 짧게
+tags:
+  - paper
+  - NLP
+  - transformer
+  - attention
+  - year-2017
+  - classic
+authors: Vaswani et al.
+venue: NeurIPS 2017
 year: 2017
-arxiv: "https://arxiv.org/abs/1706.03762"
+arxiv: https://arxiv.org/abs/1706.03762
 status: completed
 ---
 

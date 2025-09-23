@@ -3,13 +3,11 @@ title: Home
 description: Notes from papers I read and think about
 tags: [home]
 ---
-
+![[assets/Pasted image 20250923233257.png]]
 
 # PaperHakrio
 
 논문을 읽고 이해한 만큼만 담아 두는 곳입니다. 주로 AI/ML, 컴퓨터 비전, NLP를 다룹니다.
-
-## 최근에 본 것
 
 ## 보는 방법
 - 왼쪽 Explorer에서 폴더를 따라갑니다.

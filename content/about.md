@@ -4,7 +4,6 @@ description: Danny Lee — about, interests, and this site
 cover: assets/SKKAI_officialDanny.png
 ---
 
-# About
 
 안녕하세요, Danny Lee입니다. 이곳은 제가 읽고 생각한 것들을 쌓아두는 개인 아카이브입니다.
 
@@ -24,7 +23,6 @@ cover: assets/SKKAI_officialDanny.png
 
 ## 기본 인적 사항
 - 성균관대학교 소프트웨어학과 21학번 
-- 성균관대학교 인공지능대학원 진학 예정
-
-![[assets/SKKAI_officialDanny.png]]
+- 성균관대학교 인공지능대학원 VClab 진학 예정
 - 프로필 사진 
+![[assets/SKKAI_officialDanny.png]]
