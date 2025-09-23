@@ -1,4 +1,4 @@
-name: Deploy Quartz to GitHub Pages
+name: Deploy Quartz (Project Site)
 
 on:
   push:
@@ -23,7 +23,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Use Node 22
+      - name: Use Node 22 (Quartz v4.5+ 요구)
         uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -31,7 +31,7 @@ jobs:
       - name: Upgrade npm (>=10.9.2)
         run: npm i -g npm@latest
 
-      # lockfile이 없으면 npm ci가 실패합니다. 없으면 npm install로 바꾸세요.
+      # package-lock.json이 없으면 npm ci가 실패하므로 자동 분기
       - name: Install deps
         run: |
           if [ -f package-lock.json ]; then
@@ -40,8 +40,9 @@ jobs:
             npm install
           fi
 
-      - name: Build Quartz
-        run: npx quartz build
+      # 🔑 핵심: Project Site는 저장소 이름을 servePrefix로!
+      - name: Build Quartz (servePrefix)
+        run: npx quartz build --servePrefix /PaperHakrio
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
