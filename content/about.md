@@ -22,7 +22,9 @@ cover: assets/SKKAI_officialDanny.png
 - 깊게 읽은 건 `reviews/`
 - 자료 모음은 `resources/`
 
-## 연락
-- 깃허브: [[resources|Resources]]에 링크 모음
+## 기본 인적 사항
+- 성균관대학교 소프트웨어학과 21학번 
+- 성균관대학교 인공지능대학원 진학 예정
 
 ![[assets/SKKAI_officialDanny.png]]
+- 프로필 사진 
