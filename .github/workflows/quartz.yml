@@ -42,7 +42,7 @@ jobs:
 
       # 🔑 핵심: Project Site는 저장소 이름을 servePrefix로!
       - name: Build Quartz (servePrefix)
-        run: npx quartz build --servePrefix /PaperHakrio
+        run: npx quartz build
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
