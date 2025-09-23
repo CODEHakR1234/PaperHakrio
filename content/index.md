@@ -1,13 +1,16 @@
 ---
-title: Home
+title: Welcome to PaperHakrio
 description: Notes from papers I read and think about
-tags: [home]
+tags:
+  - year-2025
 ---
 ![[assets/Pasted image 20250923233257.png]]
 
 # PaperHakrio
 
 논문을 읽고 이해한 만큼만 담아 두는 곳입니다. 주로 AI/ML, 컴퓨터 비전, NLP를 다룹니다.
+
+논문 번역 사이트: https://www.deepl.com/
 
 ## 보는 방법
 - 왼쪽 Explorer에서 폴더를 따라갑니다.
