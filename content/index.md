@@ -27,8 +27,7 @@ tags: [home, research, papers]
 
 > 최근에 읽고 정리한 논문들
 
-- [[Hello my name is Danny Lee]] — 프로필 및 연구 관심사
-- [[PaperHakrio논문리뷰사이트]] — 사이트 소개
+
 
 ---
 
