@@ -66,47 +66,6 @@ tags:
 > 무조건적 모델과 조건부 모델을 하나의 모델에서 동시에 학습한 뒤, 두 점수 추정치를 선형 결합합니다.
 > 결과적으로 별도의 분류기 없이도 샘플 품질 vs 다양성의 균형을 조절할 수 있습니다.
 
-
-> [!note]- 주요 단어 정의
-> **모드 커버리지 (Mode coverage)**
-> "모드"는 데이터 분포에서 자주 등장하는 패턴이나 범주를 뜻해요.
-> 예를 들어, 고양이·강아지·새 이미지를 학습했다면, 각 동물 종류가 하나의 "모드"가 됩니다.
-> 모드 커버리지는 모델이 모든 다양한 모드를 잘 커버하는지, 즉 다양한 패턴을 빠짐없이 생성하는 력을 말합니다.  
->
-> **샘플 충실도 (Sample fidelity)**
-> 생성된 데이터(예: 이미지)가 얼마나 진짜 같은지, 품질이 높은지를 나타내는 개념이에요.
-> 충실도가 높으면 생성 이미지가 현실적인데, 대신 다양성이 줄어들 수도 있습니다.  
->
-> **저온 샘플링 (Low temperature sampling)**
-> 샘플링할 때 확률 분포의 "온도(temperature)" 파라미터를 낮추면, 모델이 더 안전하고 평균적인 결과를 내요.
-> 즉, 더 선명하지만 다양성은 줄어드는 효과가 있습니다.  
->
-> **절단 (Truncation)**
-> 샘플링 과정에서 확률이 낮은 후보를 잘라내는 방법입니다.
-> 흔히 GAN 같은 생성 모델에서 "품질을 높이기 위해 극단적이거나 이상한 샘플을 버리는 기법"이에요.  
->
-> **점수 추정치 (Score estimate)**
-> 확산 모델은 데이터의 확률분포의 기울기(gradient), 즉 "점수(score)"를 학습합니다.
-> 쉽게 말해, "노이즈가 낀 데이터를 원래 데이터 쪽으로 조금 더 움직일 방향"을 알려주는 벡터입니다.  
->
-> **분류기의 그래디언트 (Gradient from classifier)**
-> 만약 우리가 조건부 이미지(예: "고양이")를 생성하고 싶다면, 분류기가 '이건 고양이일 확률'을 높이는 방향을 알려줍니다.
-> 그 방향(gradient)을 점수 추정치에 더해주면, 원하는 조건에 맞는 이미지를 얻기 쉬워집니다.  
->
-> **분류기 가이던스 (Classifier guidance)**
-> 확산 모델이 학습한 "노이즈 제거 방향(점수)"에, 분류기의 "조건 강화 방향"을 더해서 샘플 품질을 조정하는 방법입니다.
-> 단점: 별도의 분류기 모델을 추가로 학습해야 한다는 점.  
->
-> **무조건적 모델 (Unconditional model)**
-> 어떤 조건도 주지 않고 "그냥 데이터 분포 전체"를 학습한 모델입니다.
-> 조건부 모델 (Conditional model)
-> 특정 조건(예: "고양이" 라벨)을 주었을 때만 해당 데이터 분포를 학습하는 모델입니다.  
->
-> **분류기 없는 가이던스 (Classifier-Free Guidance, CFG)**
-> "분류기 없이도 가이던스가 가능할까?"라는 발상에서 나온 방법.
-> 무조건적 모델과 조건부 모델을 하나의 모델에서 동시에 학습한 뒤, 두 점수 추정치를 선형 결합합니다.
-> 결과적으로 별도의 분류기 없이도 샘플 품질 vs 다양성의 균형을 조절할 수 있습니다.  
-
 **요약하면,**
 분류기 가이던스: 확산 모델 + 추가 분류기 필요
 분류기 없는 가이던스(CFG): 하나의 모델로 무조건/조건부 점수를 함께 학습 → 두 개를 섞어 쓰면 분류기 없이도 같은 효과
@@ -240,25 +199,20 @@ $$
 $$
 여기서 p(z) (또는 p(z_\sigma))는 x \sim p(x)와 z \sim q(z \mid x)일 때의 주변 분포를 의미한다.
 $$
-또한 $$\sigma = \log \alpha^2_\sigma / \sigma^2_\sigma$$로 정의되므로, $$\sigma는 z_\sigma의 **$$신호 대 잡음비(signal-to-noise ratio, SNR)의 로그 값**으로 해석할 수 있고, 순방향 과정은 $$\sigma$$가 감소하는 방향으로 진행된다.
+또한 $$\sigma = \log \alpha^2_\sigma / \sigma^2_\sigma$$로 정의되므로, $\sigma는 z_\sigma$ 의 신호 대 잡음비(signal-to-noise ratio, SNR)의 로그 값**으로 해석할 수 있고, 순방향 과정은 $\sigma$ 가 감소하는 방향으로 진행된다.
 
 ---
 
 데이터 x에 조건을 두면, 순방향 과정은 다음의 전이로 역으로 표현될 수 있다:
-
-  
 $$
 q(z_{\sigma’} \mid z_\sigma, x) = \mathcal{N}(\tilde{\mu}{\sigma’|\sigma}(z\sigma, x), \, \tilde{\sigma}^2_{\sigma’|\sigma} I) \tag{3}
 $$
-  
 
 여기서
-
-  
 $$
 \tilde{\mu}{\sigma’|\sigma}(z\sigma, x) = e^{-(\sigma’-\sigma)} \left(\frac{\alpha_{\sigma’}}{\alpha_\sigma}\right) z_\sigma + \left(1 - e^{-(\sigma’-\sigma)}\right)\alpha_{\sigma’} x
 $$
-  
+
 $$
 \tilde{\sigma}^2_{\sigma’|\sigma} = \left(1 - e^{-(\sigma’-\sigma)}\right) \sigma^2_{\sigma’}
 $$
@@ -281,23 +235,15 @@ $$모델 x_\theta가 정확하다면, T \to \infty일 때 $$샘플은 p(z)에 �
 
 ---
 
-모델의 평균 추정은 $$x_\theta(z_\sigma) \approx x$$를 $$q(z_{\sigma’} \mid z_\sigma, x)$$에 대입함으로써 얻어진다 (Ho et al., 2020; Kingma et al., 2021).
+모델의 평균 추정은 $x_\theta(z_\sigma) \approx x$를 $q(z_{\sigma’} \mid z_\sigma, x)$에 대입함으로써 얻어진다 (Ho et al., 2020; Kingma et al., 2021).
 
-$$여기서 x_\theta는 입력으로 \sigma도 받지만, 표기 단순화를 위해 생략한다.$$
+$여기서 x_\theta는 입력으로 \sigma도 받지만, 표기 단순화를 위해 생략한다.$
 
-  
-
-우리는 **epsilon-예측** 방식으로 $$x_\theta$$를 파라미터화한다 (Ho et al., 2020):
-
-  
+우리는 **epsilon-예측** 방식으로 $x_\theta$를 파라미터화한다 (Ho et al., 2020):
 $$
 x_\theta(z_\sigma) = \frac{z_\sigma - \sigma \epsilon_\theta(z_\sigma)}{\alpha_\sigma}
 $$
-  
-
 학습 목표는 다음과 같다:
-
-  
 $$
 \mathbb{E}{\epsilon, \sigma} \Big[ \| \epsilon\theta(z_\sigma) - \epsilon \|_2^2 \Big] \tag{5}
 $$
@@ -309,14 +255,277 @@ $$
 
 이 손실은 다중 잡음 스케일에서의 **denoising score matching** (Vincent, 2011; Hyvärinen & Dayan, 2005)에 해당한다.
 
-또한 $$p(\sigma)$$가 균일 분포일 경우, 목적 함수는 주변 로그우도 $$\log p(x)$$에 대한 변분 하한(variational lower bound)에 비례한다 (Kingma et al., 2021).
+또한 $p(\sigma)$가 균일 분포일 경우, 목적 함수는 주변 로그우도 $\log p(x)$에 대한 변분 하한(variational lower bound)에 비례한다 (Kingma et al., 2021).
 
-  
-
-비균일한 $$p(\sigma)$$를 사용할 경우, 이는 샘플 품질을 개선하기 위해 가중치를 조정할 수 있는 **가중 변분 하한(weighted variational lower bound)**으로 해석할 수 있다 (Ho et al., 2020).
+비균일한 $p(\sigma)$를 사용할 경우, 이는 샘플 품질을 개선하기 위해 가중치를 조정할 수 있는 **가중 변분 하한(weighted variational lower bound)**으로 해석할 수 있다 (Ho et al., 2020).
 
 ---
 
 조건부 생성 모델링(conditional generative modeling)의 경우, 데이터 x는 조건 정보 c(예: 클래스 레이블)과 함께 주어진다.
 
-이때 유일한 수정은 역방향 함수 근사기가 c를 추가 입력으로 받는 것뿐이다. 즉, $$\epsilon_\theta(z_\sigma, c)$$를 사용한다.
+이때 유일한 수정은 역방향 함수 근사기가 c를 추가 입력으로 받는 것뿐이다. 즉, $\epsilon_\theta(z_\sigma, c)$를 사용한다.
+
+# **3 GUIDANCE 번역**
+
+---
+
+생성 모델들(GAN, 플로우 기반 모델 등)의 흥미로운 성질 중 하나는, 샘플링 시 입력되는 노이즈의 분산이나 범위를 줄임으로써 **truncated sampling** 또는 **low temperature sampling**을 할 수 있다는 점이다.
+
+이 방식의 의도된 효과는 샘플 다양성을 줄이는 대신 개별 샘플의 품질을 높이는 것이다.
+
+예를 들어 BigGAN에서는 truncation의 양에 따라 FID 점수와 Inception 점수 사이의 절충 곡선이 나타나며, Glow의 low temperature 샘플링도 유사한 효과를 보인다.
+
+  
+
+하지만 이러한 방법을 그대로 확산 모델에 적용하는 것은 효과적이지 않다.
+
+예를 들어 모델의 score를 단순히 스케일링하거나 역방향 과정에서 가우시안 노이즈의 분산을 줄이는 경우, 확산 모델은 흐릿하고 저품질의 샘플을 생성하게 된다.
+
+---
+
+## **3.1 Classifier Guidance**
+
+  
+
+확산 모델에서 truncation과 유사한 효과를 얻기 위해, Dhariwal & Nichol (2021)은 **classifier guidance**를 제안하였다.
+
+여기서는 확산 모델의 score에 보조 분류기(classifier)의 로그우도 기울기를 더해 수정한다.
+
+이렇게 수정된 score를 사용하면, 결과적으로 확률 분포가 “원래의 조건부 분포”와 “분류기가 올바른 라벨에 높은 가능도를 부여하는 데이터”의 확률을 함께 고려하는 형태가 된다.
+
+  
+
+이 효과는, 분류기가 잘 맞출 수 있는 데이터의 확률을 상대적으로 높이는 것이다. 즉, 분류가 잘 되는 데이터는 Inception 점수에서 높은 평가를 받는데, 이는 생성 모델이 더 좋은 점수를 얻게 만든다.
+
+따라서 w > 0라는 가중치를 설정하면 Inception 점수는 향상되지만, 샘플의 다양성은 감소한다.
+
+  
+
+또한, 이 방식은 간단한 예시(세 개의 가우시안 분포를 갖는 장난감 데이터셋)에서도 관찰된다.
+
+guidance의 강도를 높이면, 각 조건부 분포는 다른 클래스와 멀리 떨어지며 자신이 확신하는 방향으로 확률 질량이 몰리게 된다. 이는 ImageNet 모델에서 guidance 강도를 높였을 때 발생하는 **Inception 점수 상승 ↔ 다양성 감소** 현상과 같은 메커니즘을 단순하게 보여준다.
+
+  
+
+흥미로운 점은, 이론적으로는 무조건적(unconditional) 모델에 w+1의 가중치를 주어 guidance를 적용하는 것이, 조건부 모델에 w의 가중치를 주어 guidance를 적용하는 것과 같은 효과를 가져야 한다는 것이다.
+
+그러나 실제 실험에서는, Dhariwal & Nichol이 무조건적 모델보다 이미 조건부 모델에 guidance를 적용했을 때 더 좋은 결과를 얻었다.
+
+따라서 실용적으로는 **조건부 모델에 guidance를 추가하는 방식**을 사용한다.
+
+---
+
+## **3.2 Classifier-Free Guidance**
+
+Classifier guidance는 원하는 대로 Inception Score(IS)와 FID 사이의 절충을 가능하게 하지만, 여전히 분류기의 기울기에 의존한다. 따라서 저자들은 분류기를 제거할 수 있는 방법을 제안한다.
+
+**Classifier-Free Guidance**는 classifier guidance와 동일한 효과를 주지만, 분류기를 사용하지 않는다.
+
+이 방법은 조건부 확산 모델의 score와 무조건적 확산 모델의 score를 선형 결합하여 guidance를 수행한다.
+
+구체적으로는, 하나의 신경망을 사용하여 조건부와 무조건적 두 모델을 동시에 학습한다.
+
+이때 학습 중 일정 확률(p_{\text{uncond}})로 조건 정보를 무작위로 버려 무조건적 모델을 학습하도록 한다. 즉, 클래스 레이블 대신 null 토큰(?)을 입력으로 주는 방식이다.
+
+이렇게 하면 하나의 네트워크가 동시에 조건부와 무조건적 score 추정을 학습할 수 있다.
+
+샘플링 시에는 조건부 score와 무조건적 score를 아래와 같이 결합한다:
+
+$$
+\tilde{\epsilon}\theta(z\sigma, c) = (1 + w)\,\epsilon_\theta(z_\sigma, c) - w\,\epsilon_\theta(z_\sigma)
+$$
+여기서 w는 guidance 강도다.
+
+이 점에서 중요한 차이는, 이 방법에는 **분류기 기울기(gradient)가 전혀 포함되지 않는다는 것**이다.
+
+따라서 이는 분류기를 속이는 adversarial attack과 같은 방식으로 해석될 수 없으며, 단순히 생성 모델 자체의 두 가지 score를 조합한 결과일 뿐이다.
+
+이 방법은 직관적으로는, 데이터의 **조건부 가능도는 증가시키고 무조건적 가능도는 감소시키는** 방향으로 작용한다.
+
+즉, 특정 클래스에 맞는 이미지를 더 그럴듯하게 만들면서, 전체 데이터 분포에서의 일반적인 가능도는 줄이는 식이다.
+
+비록 이 방식이 특정 분류기의 로그우도를 기울기로 따르는 구조는 아니지만, 실험적으로는 classifier guidance와 동일하게 Inception Score와 FID 사이의 절충 효과를 만들어낸다.
+
+따라서 **순수 생성 모델만으로도 guidance 효과를 얻을 수 있음**을 보여준다.
+
+# **4 EXPERIMENTS 번역**
+
+---
+
+우리는 classifier-free guidance를 적용한 확산 모델을 **클래스 조건부 ImageNet**(Russakovsky et al., 2015)에 대해 학습한다.
+
+이 실험 세팅은 BigGAN 논문(Brock et al., 2019) 이후부터, FID와 Inception Score 사이의 trade-off를 연구하기 위한 표준 환경으로 사용되어 왔다.
+
+이 실험의 목적은, classifier-free guidance가 classifier guidance와 유사하게 FID/IS 절충을 달성할 수 있음을 보여주는 **개념 증명(proof of concept)**이며, 반드시 SOTA 수준의 샘플 품질을 달성하려는 것이 아니다.
+
+이를 위해, 우리는 Dhariwal & Nichol (2021)이 사용한 **guided diffusion 모델**의 아키텍처와 하이퍼파라미터를 동일하게 사용한다(단, Section 2에서 기술한 continuous time 학습 방식을 제외).
+
+이 설정은 classifier guidance에 맞추어 최적화된 것이므로, classifier-free guidance에는 최적이 아닐 수 있다.
+
+또한 우리는 조건부와 무조건적 모델을 하나의 아키텍처 안에 통합하여, 별도의 분류기를 두지 않았다. 따라서 모델 용량은 이전 연구보다 오히려 줄어들었다.
+
+그럼에도 불구하고 우리의 classifier-free guided 모델은 여전히 경쟁력 있는 샘플 품질 지표를 달성했으며, 때로는 기존 방법을 능가하기도 했다.
+
+---
+
+## **4.1 Classifier-Free Guidance 강도 변화**
+
+이 절의 핵심은 본 논문의 주장을 실험적으로 검증하는 것이다:
+
+즉, classifier-free guidance가 classifier guidance나 GAN truncation과 유사하게 Inception Score와 FID 사이의 절충을 만들어낼 수 있다는 점이다.
+
+우리는 제안한 classifier-free guidance를 **64×64** 및 **128×128** 해상도의 클래스 조건부 ImageNet 생성에 적용하였다.
+
+- **Table 1, Fig. 4** → 64×64 모델 결과
+    
+- **Table 2, Fig. 5** → 128×128 모델 결과
+ 
+여기서 우리는 $w \in \{0, 0.1, 0.2, …, 4\}$ 범위에서 guidance 강도를 바꾸어 실험했으며, 각 값에 대해 50,000개의 샘플을 생성하여 FID와 Inception Score를 계산했다 (Heusel et al., 2017; Salimans et al., 2016 절차에 따름).
+
+- 모든 모델은 로그 SNR의 범위를 $\sigma_{\min} = -20, \sigma_{\max} = 20$으로 사용했다.
+    
+- 64×64 모델은 sampler 노이즈 보간 계수 v = 0.3으로 40만 스텝 학습했다.
+    
+- 128×128 모델은 v = 0.2로 270만 스텝 학습했다.
+
+**결과:**
+
+- 작은 guidance 강도(w=0.1 또는 0.3)에서 최상의 FID 점수를 얻었다.
+    
+- 강한 guidance$(w \approx 4)$에서 최상의 Inception Score를 얻었다.
+    
+- 두 극단 사이에서는 FID가 단조 감소하고, Inception Score가 단조 증가하는 **명확한 절충 곡선**이 나타났다.
+
+이 결과는 Dhariwal & Nichol (2021), Ho et al. (2021)과 비교해도 좋은 성능을 보이며, 특히 **128×128 모델은 당시 문헌에서 최고 성능**을 기록했다.
+
+예를 들어 w=0.3일 때, 128×128 ImageNet에서 우리의 모델은 classifier-guided ADM-G보다 더 낮은 FID를 기록했다.
+
+또한 w=4.0에서는 BigGAN-deep이 최적 IS 수준에서 평가될 때보다 FID와 IS 모두에서 더 나은 성능을 보였다.
+
+샘플 시각화(Fig. 1, 3, 6~8)를 보면, guidance 강도가 커질수록 **샘플 다양성은 줄어들고 개별 샘플의 품질은 향상**되는 기대된 효과가 뚜렷하게 나타났다.
+
+---
+
+## **4.2 무조건적 학습 확률 변화**
+
+Classifier-free guidance에서 학습 시 주요 하이퍼파라미터는 $p_{\text{uncond}}$, 즉 학습 중 무조건적(조건 없는) 훈련을 수행할 확률이다.
+
+우리는 64×64 ImageNet에서 $p_{\text{uncond}} \in \{0.1, 0.2, 0.5\}$로 모델을 학습하여, 다양한 guidance 강도에서 샘플 품질을 비교했다.
+
+**결과:**
+
+- $p_{\text{uncond}} = 0.5$는 항상 성능이 가장 나빴다.
+    
+- $p_{\text{uncond}} = 0.1과 0.2$는 거의 동일한 수준으로 잘 작동했다.
+    
+
+따라서 diffusion 모델의 용량 중 **상대적으로 작은 비율만 무조건적 학습에 사용해도 충분**하며, 효과적인 classifier-free guidance를 얻을 수 있음을 알 수 있다.
+
+이는 Dhariwal & Nichol이 classifier guidance에서 보고한 현상과도 유사하다. 즉, 작은 용량의 분류기만으로도 충분히 좋은 guidance 성능을 얻을 수 있었는데, classifier-free guidance에서도 같은 양상이 반복되었다.
+
+---
+
+## **4.3 샘플링 스텝 수 변화**
+
+
+샘플링 스텝 수 T는 확산 모델의 샘플 품질에 큰 영향을 준다고 알려져 있다.
+
+따라서 우리는 128×128 ImageNet 모델에 대해 $T \in \{128, 256, 1024\}$를 비교했다.
+
+**결과:**
+
+- 스텝 수가 많을수록 샘플 품질이 향상되었다.
+    
+- 특히 T=256은 샘플 품질과 속도 사이에서 가장 좋은 균형을 보였다.
+
+비교를 위해, Dhariwal & Nichol (2021)의 ADM-G 모델도 약 T=256 스텝을 사용했는데, 우리의 모델은 이보다 더 나은 성능을 달성했다.
+
+다만 중요한 점은, 우리의 방식은 샘플링 시 조건부 score와 무조건적 score를 각각 계산해야 하므로, 스텝마다 모델을 두 번 평가해야 한다.
+
+따라서 동일한 아키텍처를 사용한다면, 공정한 비교를 위해서는 T=128을 기준으로 보아야 하며, 이 경우에는 FID에서 ADM-G보다 다소 성능이 떨어진다.
+
+# **5 DISCUSSION 번역**
+
+---
+
+우리의 classifier-free guidance 방법의 가장 실용적인 장점은 **극단적으로 단순하다**는 것이다.
+
+학습 시에는 조건 정보를 무작위로 드롭(dropout)하는 **한 줄의 코드 수정**만 필요하고,
+
+샘플링 시에는 조건부와 무조건적 score 추정을 **선형 결합**하는 또 다른 한 줄만 필요하다.
+
+  
+
+반면 classifier guidance는, 별도의 분류기를 학습해야 하므로 학습 파이프라인이 훨씬 복잡해진다.
+
+게다가 이 분류기는 노이즈가 섞인 z_\sigma에서 학습되어야 하기 때문에, 일반적인 사전학습된 분류기를 그대로 쓸 수 없다.
+
+---
+
+Classifier-free guidance는, classifier guidance와 마찬가지로 Inception Score(IS)와 FID 사이에서 절충을 할 수 있지만, **추가 학습된 분류기 없이 순수 생성 모델만으로 가능하다**는 점을 보여주었다.
+
+  
+
+또한 우리의 확산 모델은 **제약이 없는 신경망(unconstrained neural networks)**으로 파라미터화되기 때문에, score 추정값은 반드시 보존적 벡터장(conservative vector field)을 이루지 않는다.
+
+즉, classifier guidance의 분류기 기울기와 달리, 우리의 classifier-free guided 샘플러가 따르는 step 방향은 분류기 기울기와 전혀 닮지 않는다.
+
+따라서 이는 분류기에 대한 gradient 기반 적대적 공격(adversarial attack)으로 해석될 수 없으며, 그럼에도 불구하고 IS와 FID 같은 분류기 기반 지표를 높일 수 있음을 보여준다.
+
+---
+
+우리는 또 하나의 직관적 설명을 얻었다.
+
+guidance는 **무조건적 가능도(unconditional likelihood)는 줄이고, 조건부 가능도(conditional likelihood)는 높이는** 방식으로 작동한다는 것이다.
+
+Classifier-free guidance는 음의 score 항을 추가하여 무조건적 가능도를 줄인다.
+
+이러한 방식은 아직까지 탐구되지 않았으며, 다른 응용 분야에서도 사용될 수 있을 것이다.
+
+---
+
+Classifier-free guidance는 여기서 무조건적 모델 학습에 의존하고 있지만, 어떤 경우에는 이를 피할 수도 있다.
+
+만약 클래스 분포가 알려져 있고 클래스 개수가 적다면,
+
+\sum_c p(x \mid c)p(c) = p(x)
+
+관계를 이용하여 조건부 score들로부터 무조건적 score를 얻을 수 있다.
+
+이 경우, 명시적으로 무조건적 모델을 학습하지 않아도 된다.
+
+하지만 이는 가능한 클래스 수만큼 forward pass가 필요하기 때문에, 고차원 조건을 가진 상황에서는 비효율적이다.
+
+---
+
+Classifier-free guidance의 잠재적 단점 중 하나는 **샘플링 속도**다.
+
+일반적으로 분류기는 생성 모델보다 작고 빠르기 때문에, classifier guidance가 classifier-free guidance보다 샘플링 속도 면에서 더 빠를 수 있다.
+
+왜냐하면 classifier-free guidance는 조건부 score와 무조건적 score를 모두 계산해야 하므로, 확산 모델을 두 번 실행해야 하기 때문이다.
+
+이 문제는 아키텍처를 변경하여 네트워크의 후반부에서 조건 정보를 주입하는 방식을 사용하면 완화될 수 있지만, 이는 미래 연구로 남겨둔다.
+
+---
+
+마지막으로, **샘플 품질을 높이는 대신 다양성을 줄이는** 모든 guidance 방법은, 다양성 감소가 실제로 허용 가능한지에 대한 문제에 직면한다.
+
+응용 분야에서 데이터의 일부가 과소대표(underrepresented)되는 경우, 다양성을 유지하는 것은 매우 중요하다.
+
+따라서 향후 연구에서는, 샘플 품질을 유지하면서도 샘플 다양성을 보존할 수 있는 방법을 탐구하는 것이 흥미로운 방향이 될 것이다.
+
+# **6 CONCLUSION 번역**
+
+우리는 classifier-free guidance라는 방법을 제안했다.
+
+이 방법은 확산 모델에서 **샘플의 품질을 향상**시키는 동시에 **샘플의 다양성을 줄이는** 효과를 낸다.
+
+Classifier-free guidance는 **classifier가 없는 classifier guidance**라고 생각할 수 있다.
+
+그리고 우리의 결과는, classifier-free guidance가 효과적임을 보여줌으로써,
+
+**순수한 생성 확산 모델만으로도** classifier 기반의 샘플 품질 지표(예: Inception Score, FID)를 극대화할 수 있다는 것을 확인했다.
+
+즉, 전혀 classifier gradient에 의존하지 않고도 동일한 성과를 달성할 수 있다.
+
+우리는 앞으로 classifier-free guidance가 **더 다양한 환경과 데이터 모달리티**에 적용되는 연구가 이루어지기를 기대한다.
