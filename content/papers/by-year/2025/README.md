@@ -8,7 +8,7 @@ tags:
 
 여기에는 2025년에 읽고 메모한 논문을 둡니다. 
 
-- - _Denoising Diffusion Probabilistic Models (DDPM)_ — Jonathan Ho, Ajay Jain, Pieter Abbeel (2020)
+- Denoising Diffusion Probabilistic Models (DDPM)_ — Jonathan Ho, Ajay Jain, Pieter Abbeel (2020)
     
     [arXiv:2006.11239](https://arxiv.org/abs/2006.11239) 
     
