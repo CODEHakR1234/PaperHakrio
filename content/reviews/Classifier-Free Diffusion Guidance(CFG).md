@@ -318,13 +318,17 @@ $$
 $$
 또한 $$\sigma = \log \alpha^2_\sigma / \sigma^2_\sigma$$로 정의되므로, $\sigma는 z_\sigma$ 의 신호 대 잡음비(signal-to-noise ratio, SNR)의 로그 값**으로 해석할 수 있고, 순방향 과정은 $\sigma$ 가 감소하는 방향으로 진행된다.
 
+- 처음에 딱 봤을 때 머리가 아팠지만 기존의 diffusion 모델의 연속시간에서의 forward과정임을 알 수 있었다. 기존에는 t라는 스텝이 주어져있고 discrete했다면 여기는 $\sigma$ 라는 연속 하이퍼 파라미터를 도입해 노이즈 양을 조절하였다. (1) 식은 처음 데이터 x가 주어질때 $\sigma^2_\sigma$에 따른 생성된 확률분포  $q(z_\sigma \mid x)$을 의미한다. 
+- (2) 식은 일반적인 시간 흐름에서의 순방향 전파를 나타낸다. 
+- $\sigma = \log \alpha^2_\sigma / \sigma^2_\sigma$ 이식은 $\alpha^2_\sigma$ 가 원본 신호이고 $\sigma^2_\sigma$을 나타내므로 신호 대비 잡음비이다.(감소방향은 원본 흐릿)
+- (참고 $z_\sigma = \alpha_\sigma x + \sigma_\sigma \epsilon, \quad \epsilon \sim \mathcal{N}(0,I)$)
+
 ---
 
 데이터 x에 조건을 두면, 순방향 과정은 다음의 전이로 역으로 표현될 수 있다:
 $$
 q(z_{\sigma’} \mid z_\sigma, x) = \mathcal{N}(\tilde{\mu}{\sigma’|\sigma}(z\sigma, x), \, \tilde{\sigma}^2_{\sigma’|\sigma} I) \tag{3}
 $$
-
 여기서
 $$
 \tilde{\mu}{\sigma’|\sigma}(z\sigma, x) = e^{-(\sigma’-\sigma)} \left(\frac{\alpha_{\sigma’}}{\alpha_\sigma}\right) z_\sigma + \left(1 - e^{-(\sigma’-\sigma)}\right)\alpha_{\sigma’} x
@@ -333,22 +337,97 @@ $$
 $$
 \tilde{\sigma}^2_{\sigma’|\sigma} = \left(1 - e^{-(\sigma’-\sigma)}\right) \sigma^2_{\sigma’}
 $$
+
+> [!note]- 추가설명 
+> 📖 **1. 원래 forward 과정**  
+> - 정의:  
+>   $$
+>   q(z_\sigma \mid x) = \mathcal{N}(\alpha_\sigma x, \; \sigma_\sigma^2 I)
+>   $$  
+> - 해석: 원본 데이터 $(x)$에서 시작해 점점 노이즈를 추가해 $(z_\sigma)$를 만드는 과정.  
+>
+> 📖 **2. 시점 사이의 전이 (transition)**  
+> - 두 시점 $(\sigma, \sigma') ((\sigma < \sigma'))$가 있을 때,  
+>   $$
+>   q(z_{\sigma'} \mid z_\sigma, x)
+>   $$  
+>   - 의미: “조건부 전이(distribution between two noisy states)”.  
+>   - 즉, $(z_\sigma)$를 알고 있을 때 $(z_{\sigma'})$를 어떻게 샘플링하는가를 정의.  
+>
+> 📖 **3. 평균 $(\tilde{\mu}_{\sigma'|\sigma}(z_\sigma, x))$**  
+> - 식:  
+>   $$
+>   \tilde{\mu}_{\sigma'|\sigma}(z_\sigma, x)  
+>   = e^{-(\sigma'-\sigma)} \Big(\frac{\alpha_{\sigma'}}{\alpha_\sigma}\Big) z_\sigma  
+>   + \big(1 - e^{-(\sigma'-\sigma)}\big) \alpha_{\sigma'} x
+>   $$  
+> - 해석:  
+>   - $(z_\sigma)$: 현재 noisy 상태  
+>   - $(x)$: 원본 데이터  
+>   - 계수 $(e^{-(\sigma'-\sigma)})$, $(1 - e^{-(\sigma'-\sigma)})$: 시간 간격에 따른 가중치  
+>   - **결론**: 평균은 $(z_\sigma)$와 $(x)$의 선형 결합 → “다음 단계는 지금 상태와 원본 사이 어딘가”.  
+>
+> 📖 **4. 분산 $(\tilde{\sigma}^2_{\sigma'|\sigma})$**  
+> - 식:  
+>   $$
+>   \tilde{\sigma}^2_{\sigma'|\sigma} = (1 - e^{-(\sigma'-\sigma)}) \sigma_{\sigma'}^2
+>   $$  
+> - 해석:  
+>   - 시점 간격이 클수록 $((\sigma'-\sigma)↑)$ 더 많은 노이즈 추가.  
+>   - 따라서 분산↑ → $(z_{\sigma'})$가 더 퍼져 있음.  
+>
+> 📖 **5. 왜 “역으로 표현된 forward 과정”인가?**  
+> - 원래 forward: $(x \to z_\sigma)$ 바로 가는 분포.  
+> - 이번 식: $(z_\sigma \to z_{\sigma'})$ 전이를 정의.  
+> - 즉, forward를 **Markov chain**으로 명확히 만든 버전:  
+>   $$
+>   x \;\to\; z_\sigma \;\to\; z_{\sigma'} \;\to\; \cdots
+>   $$  
+- ddpm에서 $x_t$ 랑 $x$를 통해 $x_{t-1}$ 를 정의했던 과정과 유사하네요. 수식은 어려워...
 ---
 
-역방향 생성 과정은 $$p_\theta(z_{\sigma_{\min}}) = \mathcal{N}(0, I)$$에서 시작한다. 전이는 다음과 같이 정의된다:
+역방향 생성 과정은 $$p_\theta(z_{\sigma_{\min}}) = \mathcal{N}(0, I)$$
+- $\sigma_{\min}$이라고 정의하는게 연속된 하이퍼 파라미터여서 그때의 분포가 표준정규분포이다.
+에서 시작한다. 전이는 다음과 같이 정의된다:
 
-  
 $$
 p_\theta(z_{\sigma’} \mid z_\sigma) = \mathcal{N}\Big(\tilde{\mu}{\sigma’|\sigma}(z\sigma, x_\theta(z_\sigma)), \, (\tilde{\sigma}^2_{\sigma’|\sigma})^{1-v} (\sigma^2_{\sigma|\sigma’})^v \Big) \tag{4}
 $$
-  
-
 여기서 v는 고정된 하이퍼파라미터다.
-
-  
 
 샘플링 시에는 $$\sigma_{\min} = \sigma_1 < \cdots < \sigma_T = \sigma_{\max}$$의 증가하는 시퀀스를 따라 이 전이를 적용한다. 즉, Sohl-Dickstein et al. (2015), Ho et al. (2020)의 **이산 시간 조상 샘플러(ancestral sampler)를 따른다.
 $$모델 x_\theta가 정확하다면, T \to \infty일 때 $$샘플은 p(z)에 해당하는 확률미분방정식(SDE)의 해와 동일하게 분포하며 (Song et al., 2021b), 이를 $p_\theta(z)$라 표기한다.
+
+> [!note]- 추가설명
+> **DDPM vs 일반화된 역방향 과정 (분산 처리와 학습 여부)**  
+>
+> - **DDPM (Ho et al., 2020)**  
+>   - 역방향 전이:  
+>     $$
+>     p_\theta(x_{t-1}\mid x_t) = \mathcal{N}(\mu_\theta(x_t, t), \; \beta_t I)
+>     $$  
+>   - $(\beta_t)$는 **고정된 분산**, 학습하지 않음.  
+>   - 단순·안정적이지만 유연성이 부족.  
+>
+> - **일반화된 과정 (식 (4))**  
+>   - 분산을 forward와 backward 항의 **혼합**으로 정의:  
+>     $$
+>     (\tilde{\sigma}^2_{\sigma'|\sigma})^{1-v}\;(\sigma^2_{\sigma|\sigma'})^v
+>     $$  
+>   - $(\tilde{\sigma}^2_{\sigma'|\sigma})$: forward 과정에서 유도된 **고정 분산**.  
+>   - $(\sigma^2_{\sigma|\sigma'})$: 역방향에서 정의된 분산 → **학습 가능**.  
+>   - $(v \in [0,1])$: 두 분산을 어떻게 섞을지 정하는 **하이퍼파라미터**.  
+>
+> - **의미**  
+>   - \(v=0\): forward 고정 분산만 사용 → 학습 대상 아님.  
+>   - \(v=1\): 역방향 분산만 사용 → 네트워크가 **분산까지 예측**해야 함.  
+>   - \(0<v<1\): forward(안정성)와 backward(유연성)을 **트레이드오프**.  
+>
+> - **정리**  
+>   - **DDPM**: 분산 고정, 단순하지만 제한적.  
+>   - **일반화된 접근**: 필요에 따라 **분산도 학습**하여 더 유연한 역방향 전이를 정의.  
+>
+> 👉 한 줄 요약: **DDPM은 분산을 고정하지만, 일반화된 과정은 forward 고정 분산과 학습 가능한 역방향 분산을 섞어 안정성과 유연성을 동시에 추구한다.**
 
 ---
 
@@ -360,6 +439,7 @@ $여기서 x_\theta는 입력으로 \sigma도 받지만, 표기 단순화를 위
 $$
 x_\theta(z_\sigma) = \frac{z_\sigma - \sigma \epsilon_\theta(z_\sigma)}{\alpha_\sigma}
 $$
+- 주어진 $z_\sigma$와 예측한 $\epsilon_\theta(z_\sigma)$을 이용해 $x_\theta(z_\sigma)$을 복원한다. 
 학습 목표는 다음과 같다:
 $$
 \mathbb{E}{\epsilon, \sigma} \Big[ \| \epsilon\theta(z_\sigma) - \epsilon \|_2^2 \Big] \tag{5}
@@ -368,120 +448,276 @@ $$
 $$
 여기서 \epsilon \sim \mathcal{N}(0, I), z_\sigma = \alpha_\sigma x + \sigma \epsilon, \sigma는 분포 p(\sigma)에서 샘플링한다.
 $$
+- 우리가 알고 있는 익숙한 학습목표이다.
 ---
 
 이 손실은 다중 잡음 스케일에서의 **denoising score matching** (Vincent, 2011; Hyvärinen & Dayan, 2005)에 해당한다.
+
+- 이거 때문에 score function 공부했습니다.
 
 또한 $p(\sigma)$가 균일 분포일 경우, 목적 함수는 주변 로그우도 $\log p(x)$에 대한 변분 하한(variational lower bound)에 비례한다 (Kingma et al., 2021).
 
 비균일한 $p(\sigma)$를 사용할 경우, 이는 샘플 품질을 개선하기 위해 가중치를 조정할 수 있는 **가중 변분 하한(weighted variational lower bound)**으로 해석할 수 있다 (Ho et al., 2020).
 
+> [!note]- 추가설명
+> **노이즈 예측 손실과 DSM/ELBO의 관계**  
+>
+> **1. 노이즈 주입 (forward)**  
+> $$
+> z_\sigma = \alpha_\sigma x + \sigma \epsilon, \quad \epsilon \sim \mathcal{N}(0,I)
+> $$  
+>
+> **2. 점수 함수 (score function)**  
+> $$
+> \nabla_z \log q(z_\sigma \mid x) 
+> = -\frac{1}{\sigma^2}(z_\sigma - \alpha_\sigma x) 
+> = -\frac{1}{\sigma}\epsilon
+> $$  
+>
+> **3. epsilon-예측과 score의 관계**  
+> $$
+> \epsilon_\theta(z_\sigma) \approx \epsilon
+> $$  
+> 따라서  
+> $$
+> s_\theta(z_\sigma,\sigma) \approx -\frac{1}{\sigma}\,\epsilon_\theta(z_\sigma)
+> $$  
+>
+> **4. 학습 목표 (MSE 손실)**  
+> $$
+> \mathcal{L}(\theta) 
+> = \mathbb{E}_{x,\epsilon,\sigma} 
+>   \big[ \|\epsilon_\theta(z_\sigma)-\epsilon\|_2^2 \big]
+> $$  
+>
+> **5. DSM과의 동치성**  
+> $$
+> \mathcal{L}(\theta) 
+> \;\propto\; 
+> \mathbb{E}_{z,\sigma}\big[\|s_\theta(z,\sigma) - \nabla_z \log q_\sigma(z)\|_2^2\big]
+> $$  
+> 즉, 다중 스케일 DSM과 동일한 목적.  
+>
+> **6. $p(\sigma)$가 균일할 때**  
+> $$
+> \mathcal{L}(\theta) \;\propto\; -\text{ELBO} \;\;\;(\approx -\log p_\theta(x))
+> $$  
+> → 로그우도의 변분 하한 최적화와 동일.  
+>
+> **7. $p(\sigma)$가 비균일할 때**  
+> $$
+> \mathcal{L}(\theta) 
+> \;\propto\; 
+> \sum_{\sigma} w(\sigma)\,\mathbb{E}\big[\|\epsilon_\theta(z_\sigma)-\epsilon\|^2\big]
+> $$  
+> → Weighted ELBO로 해석, $w(\sigma)$에 따라 **샘플 품질 트레이드오프** 조절 가능.  
+>
+> **정리**  
+> - MSE 손실 = 다중 잡음 스케일 DSM  
+> - 균일 $p(\sigma)$ → ELBO  
+> - 비균일 $p(\sigma)$ → Weighted ELBO (품질 개선 가능)  
+
+- 멘탈 나갑니다.
 ---
 
 조건부 생성 모델링(conditional generative modeling)의 경우, 데이터 x는 조건 정보 c(예: 클래스 레이블)과 함께 주어진다.
 
 이때 유일한 수정은 역방향 함수 근사기가 c를 추가 입력으로 받는 것뿐이다. 즉, $\epsilon_\theta(z_\sigma, c)$를 사용한다.
 
-# **3 GUIDANCE 번역**
+- 조건을 추가로 받는 것이 유일한 수정이다.
 
----
+# **3. Guidance**
 
-생성 모델들(GAN, 플로우 기반 모델 등)의 흥미로운 성질 중 하나는, 샘플링 시 입력되는 노이즈의 분산이나 범위를 줄임으로써 **truncated sampling** 또는 **low temperature sampling**을 할 수 있다는 점이다.
+GAN이나 Flow 기반 생성 모델의 흥미로운 특성 중 하나는, 샘플링 시 생성 모델에 주는 노이즈 입력의 **분산(variance)** 이나 **범위(range)** 를 줄임으로써 **truncated sampling** 또는 **low temperature sampling**을 할 수 있다는 점이다. 이렇게 하면 샘플의 **다양성(diversity)** 은 줄어들지만, **품질(quality)** 은 향상된다.
 
-이 방식의 의도된 효과는 샘플 다양성을 줄이는 대신 개별 샘플의 품질을 높이는 것이다.
+- 넘어갈게요 
 
-예를 들어 BigGAN에서는 truncation의 양에 따라 FID 점수와 Inception 점수 사이의 절충 곡선이 나타나며, Glow의 low temperature 샘플링도 유사한 효과를 보인다.
+예를 들어 BigGAN (Brock et al., 2019)의 truncation은 낮은 truncation과 높은 truncation 값 각각에 대해 **FID score**와 **Inception score** 사이의 **trade-off 곡선**을 만들어낸다. Glow (Kingma & Dhariwal, 2018)의 low temperature 샘플링도 비슷한 효과를 보인다.
 
-  
+- 앞에서 한 말 또하네 
 
-하지만 이러한 방법을 그대로 확산 모델에 적용하는 것은 효과적이지 않다.
+하지만 확산 모델에서 단순히 truncation이나 low temperature sampling을 구현하려는 시도는 잘 동작하지 않는다. 예컨대 **모델의 score를 스케일링**하거나, 역과정(reverse process)에서의 **가우시안 노이즈 분산을 줄이는 방법**은, 확산 모델이 흐릿하고 품질이 낮은 샘플을 생성하게 만든다 (Dhariwal & Nichol, 2021).
 
-예를 들어 모델의 score를 단순히 스케일링하거나 역방향 과정에서 가우시안 노이즈의 분산을 줄이는 경우, 확산 모델은 흐릿하고 저품질의 샘플을 생성하게 된다.
+- ???
 
 ---
 
 ## **3.1 Classifier Guidance**
 
-  
+확산 모델에서 truncation과 유사한 효과를 얻기 위해, Dhariwal & Nichol (2021)은 **classifier guidance**를 도입했다.
 
-확산 모델에서 truncation과 유사한 효과를 얻기 위해, Dhariwal & Nichol (2021)은 **classifier guidance**를 제안하였다.
+확산 score는 원래 다음과 같이 근사된다:
 
-여기서는 확산 모델의 score에 보조 분류기(classifier)의 로그우도 기울기를 더해 수정한다.
+$$
 
-이렇게 수정된 score를 사용하면, 결과적으로 확률 분포가 “원래의 조건부 분포”와 “분류기가 올바른 라벨에 높은 가능도를 부여하는 데이터”의 확률을 함께 고려하는 형태가 된다.
+\epsilon_\theta(z_\sigma, c) ;\approx; -\sigma ,\nabla_{z_\sigma} \log p(z_\sigma \mid c).
 
-  
+$$
+- 조건부 확산 모델에 대한 우도의 gradient 즉 score는 예측한 노이즈로 근사된다. 
 
-이 효과는, 분류기가 잘 맞출 수 있는 데이터의 확률을 상대적으로 높이는 것이다. 즉, 분류가 잘 되는 데이터는 Inception 점수에서 높은 평가를 받는데, 이는 생성 모델이 더 좋은 점수를 얻게 만든다.
+여기에 보조 분류기 $p_\theta(c \mid z_\sigma)$의 로그 가능도 기울기를 포함시키면, 수정된 score는 다음과 같다:
 
-따라서 w > 0라는 가중치를 설정하면 Inception 점수는 향상되지만, 샘플의 다양성은 감소한다.
+$$
 
-  
+\tilde{\epsilon}_\theta(z_\sigma, c)
 
-또한, 이 방식은 간단한 예시(세 개의 가우시안 분포를 갖는 장난감 데이터셋)에서도 관찰된다.
+= \epsilon_\theta(z_\sigma, c) - w \sigma \nabla_{z_\sigma} \log p_\theta(c \mid z_\sigma)
 
-guidance의 강도를 높이면, 각 조건부 분포는 다른 클래스와 멀리 떨어지며 자신이 확신하는 방향으로 확률 질량이 몰리게 된다. 이는 ImageNet 모델에서 guidance 강도를 높였을 때 발생하는 **Inception 점수 상승 ↔ 다양성 감소** 현상과 같은 메커니즘을 단순하게 보여준다.
+;;\approx;;
 
-  
+-\sigma \nabla_{z_\sigma} \big[ \log p(z_\sigma \mid c) + w \log p_\theta(c \mid z_\sigma) \big].
 
-흥미로운 점은, 이론적으로는 무조건적(unconditional) 모델에 w+1의 가중치를 주어 guidance를 적용하는 것이, 조건부 모델에 w의 가중치를 주어 guidance를 적용하는 것과 같은 효과를 가져야 한다는 것이다.
+$$
 
-그러나 실제 실험에서는, Dhariwal & Nichol이 무조건적 모델보다 이미 조건부 모델에 guidance를 적용했을 때 더 좋은 결과를 얻었다.
+여기서 w는 guidance 강도를 조절하는 파라미터다.
 
-따라서 실용적으로는 **조건부 모델에 guidance를 추가하는 방식**을 사용한다.
+- 해당 스코어에서 c를 분류하는 확률을 예측하는 분류기의 score를 가중치를 달아 유도하면 더욱 해당 조건의 분포로 향하는 방향으로 설정된다. (일단 이렇게 이해 했습니다.)
+
+따라서 수정된 score $\tilde{\epsilon}_\theta$를 사용하면, 샘플은 다음 분포에서 근사적으로 생성된다:
+$$
+
+\tilde{p}_\theta(z_\sigma \mid c) ;\propto; p_\theta(z_\sigma \mid c), p_\theta(c \mid z_\sigma)^{,w}.
+
+$$
+즉, 분류기가 올바른 레이블에 높은 가능도를 부여하는 데이터를 모델이 더 선호하게 된다. 이는 **Inception Score(IS)** 를 높이는 방향으로 작용한다. 실제로 Dhariwal & Nichol은 w>0일 때 샘플의 **다양성이 줄어드는 대가로 IS가 향상**됨을 발견했다.
+
+- CG에 관한 일차적인 이해 완료 
 
 ---
 
+### **무조건 모델 vs 조건부 모델**
+
+흥미로운 점은, **무조건(unconditional) 모델**에 guidance weight w+1을 적용하는 것이, **조건부 모델**에 weight w를 적용하는 것과 동일해야 한다는 것이다:
+
+$$
+
+p_\theta(z_\sigma \mid c) , p_\theta(c \mid z_\sigma)^w
+
+;\propto;
+
+p_\theta(z_\sigma) , p_\theta(c \mid z_\sigma)^{,w+1}.
+
+$$
+
+score의 관점에서 쓰면:
+
+$$
+
+\epsilon_\theta(z_\sigma) - (w+1)\sigma \nabla_{z_\sigma}\log p_\theta(c \mid z_\sigma)
+
+;\approx;
+
+-\sigma \nabla_{z_\sigma}\Big[ \log p(z_\sigma) + (w+1)\log p_\theta(c \mid z_\sigma) \Big]
+
+$$
+
+$$
+
+= -\sigma \nabla_{z_\sigma}\Big[ \log p(z_\sigma \mid c) + w\log p_\theta(c \mid z_\sigma) \Big].
+
+$$
+
+하지만 Dhariwal & Nichol은 실험적으로 **무조건 모델 + guidance**보다 **조건부 모델 + guidance**가 더 나은 결과를 낸다고 보고했다. 따라서 이후에서는 조건부 모델 기반의 guidance에 집중한다.
+
+- 수식적으로는 동일함 근데 실험에서는 조건부 모델 + guidance가 더 나은 결과 그 이유는 분류기가  $p_\theta(c \mid z_\sigma)$을 정확하게 근사하지 못하기 때문이다.
+
+---
 ## **3.2 Classifier-Free Guidance**
 
-Classifier guidance는 원하는 대로 Inception Score(IS)와 FID 사이의 절충을 가능하게 하지만, 여전히 분류기의 기울기에 의존한다. 따라서 저자들은 분류기를 제거할 수 있는 방법을 제안한다.
+Classifier guidance는 IS/FID 절충을 잘 수행하지만, 여전히 **외부 분류기의 gradient**에 의존한다. 우리는 분류기를 제거하면서도 동일한 효과를 내는 **classifier-free guidance**를 제안한다.
 
-**Classifier-Free Guidance**는 classifier guidance와 동일한 효과를 주지만, 분류기를 사용하지 않는다.
+핵심 아이디어는 **하나의 모델을 조건부와 무조건부 동시에 학습**하는 것이다.
+- 완전히 핵심 알고리즘 
 
-이 방법은 조건부 확산 모델의 score와 무조건적 확산 모델의 score를 선형 결합하여 guidance를 수행한다.
+무조건 score 추정기:
+$$
+    
+    \epsilon_\theta(z_\sigma) = \epsilon_\theta(z_\sigma, c=\varnothing).
+    
+$$
 
-구체적으로는, 하나의 신경망을 사용하여 조건부와 무조건적 두 모델을 동시에 학습한다.
+조건부 score 추정기:
+$$
+    
+    \epsilon_\theta(z_\sigma, c).
+    
+ $$
 
-이때 학습 중 일정 확률(p_{\text{uncond}})로 조건 정보를 무작위로 버려 무조건적 모델을 학습하도록 한다. 즉, 클래스 레이블 대신 null 토큰(?)을 입력으로 주는 방식이다.
+학습 과정에서 확률 $p_{\text{uncond}}$로 c를 null 토큰 $\varnothing$으로 대체하여 **공동 학습(joint training)** 을 수행한다.
 
-이렇게 하면 하나의 네트워크가 동시에 조건부와 무조건적 score 추정을 학습할 수 있다.
+- 동일한 구조에서 c에 공집합의 유무를 통해 조건 무조건 학습을 진행한다. 동일한 네트워크 
 
-샘플링 시에는 조건부 score와 무조건적 score를 아래와 같이 결합한다:
+샘플링 시, 두 score를 선형 결합하여 새로운 guided score를 만든다:
 
 $$
-\tilde{\epsilon}\theta(z\sigma, c) = (1 + w)\,\epsilon_\theta(z_\sigma, c) - w\,\epsilon_\theta(z_\sigma)
+\tilde{\epsilon}_\theta(z_\sigma, c) ;=; (1+w),\epsilon_\theta(z_\sigma, c) - w,\epsilon_\theta(z_\sigma). \tag{6}
 $$
-여기서 w는 guidance 강도다.
 
-이 점에서 중요한 차이는, 이 방법에는 **분류기 기울기(gradient)가 전혀 포함되지 않는다는 것**이다.
+![[assets/Pasted image 20250924225552.png]]
 
-따라서 이는 분류기를 속이는 adversarial attack과 같은 방식으로 해석될 수 없으며, 단순히 생성 모델 자체의 두 가지 score를 조합한 결과일 뿐이다.
+---
 
-이 방법은 직관적으로는, 데이터의 **조건부 가능도는 증가시키고 무조건적 가능도는 감소시키는** 방향으로 작용한다.
+### **암묵적 분류기와의 관계**
 
-즉, 특정 클래스에 맞는 이미지를 더 그럴듯하게 만들면서, 전체 데이터 분포에서의 일반적인 가능도는 줄이는 식이다.
+직관적으로는, 이는 암묵적 분류기
+$$
 
-비록 이 방식이 특정 분류기의 로그우도를 기울기로 따르는 구조는 아니지만, 실험적으로는 classifier guidance와 동일하게 Inception Score와 FID 사이의 절충 효과를 만들어낸다.
+\pi(c \mid z_\sigma) ;\propto; \frac{p(z_\sigma \mid c)}{p(z_\sigma)}
 
-따라서 **순수 생성 모델만으로도 guidance 효과를 얻을 수 있음**을 보여준다.
+$$
+의 gradient와 관련 있다.
 
-# **4 EXPERIMENTS 번역**
+만약 우리가 정확한 score $\epsilon^*(z_\sigma, c)$와 $\epsilon^*(z_\sigma)$를 알고 있다면:
 
+$$
+
+\nabla_{z_\sigma}\log \pi(c\mid z_\sigma) = -\tfrac{1}{\sigma}\left[ \epsilon^*(z_\sigma, c) - \epsilon^*(z_\sigma) \right].
+
+$$
+- $w(\epsilon^*(z_\sigma, c) - \epsilon^*(z_\sigma))$ 보인다 보여...
+
+이를 classifier guidance에 적용하면:
+
+$$
+\tilde{\epsilon}^*(z_\sigma, c) = (1+w)\epsilon^*(z_\sigma, c) - w \epsilon^*(z_\sigma),
+$$
+
+즉 식 (6)과 같은 형태가 된다.
+
+다만 실제로는 우리가 갖는 $\epsilon_\theta$는 추정치이므로, 이것이 어떤 분류기의 gradient라고 보장되지는 않는다.
+
+- 추정의 조합, 정확하지 않을 듯 
+
+---
+### **Algorithm 1. Joint Training**
+![[assets/Pasted image 20250924220613.png]]
+- $p_{uncond}$ 의 확률로 c에 공집합을 넣어 학습 시킨다. 기본적으로 조건부 확산모델의 학습법을 따르지만 적은 확률로 같이 무조건 확산 모델의 학습법을 적용 시킨다. 두가지의 분포를 동시에 학습한다. log SNR을 무작위로 정해 학습을 한다. 
+---
+### **Algorithm 2. Sampling**
+![[Pasted image 20250924220655.png]]
+- $w$와 $c$는 주어진다. 그리고 log SNR을 정렬하고 작은 값부터 큰 값 순으로(점점 노이즈 적어진다.)
+- 이제 초기 노이즈에서 두가지 샘플링(조건, 무조건)을 진행하고 해당 샘플링으로 다음 스텝 복원 값을 구하고 반복하여 정해진 T 값을 실행한다. 
+# 4 EXPERIMENTS 번역
 ---
 
 우리는 classifier-free guidance를 적용한 확산 모델을 **클래스 조건부 ImageNet**(Russakovsky et al., 2015)에 대해 학습한다.
 
 이 실험 세팅은 BigGAN 논문(Brock et al., 2019) 이후부터, FID와 Inception Score 사이의 trade-off를 연구하기 위한 표준 환경으로 사용되어 왔다.
 
-이 실험의 목적은, classifier-free guidance가 classifier guidance와 유사하게 FID/IS 절충을 달성할 수 있음을 보여주는 **개념 증명(proof of concept)**이며, 반드시 SOTA 수준의 샘플 품질을 달성하려는 것이 아니다.
+이 실험의 목적은, classifier-free guidance가 classifier guidance와 유사하게 FID/IS 절충을 달성할 수 있음을 보여주는 **개념 증명(proof of concept)** 이며, 반드시 SOTA 수준의 샘플 품질을 달성하려는 것이 아니다.
+- 유사해도 성공 
 
 이를 위해, 우리는 Dhariwal & Nichol (2021)이 사용한 **guided diffusion 모델**의 아키텍처와 하이퍼파라미터를 동일하게 사용한다(단, Section 2에서 기술한 continuous time 학습 방식을 제외).
+- CG와 동일하게 가볼게요 
 
-이 설정은 classifier guidance에 맞추어 최적화된 것이므로, classifier-free guidance에는 최적이 아닐 수 있다.
+이 설정은 classifier guidance에 맞추어 최적화된 것이므로, classifier-free guidance에는 최적이 아닐 수 있다. 
+- 밑밥 
 
 또한 우리는 조건부와 무조건적 모델을 하나의 아키텍처 안에 통합하여, 별도의 분류기를 두지 않았다. 따라서 모델 용량은 이전 연구보다 오히려 줄어들었다.
+- 장점 어필 
 
 그럼에도 불구하고 우리의 classifier-free guided 모델은 여전히 경쟁력 있는 샘플 품질 지표를 달성했으며, 때로는 기존 방법을 능가하기도 했다.
+- 그럼에도 극복 
 
 ---
 
@@ -490,6 +726,7 @@ $$
 이 절의 핵심은 본 논문의 주장을 실험적으로 검증하는 것이다:
 
 즉, classifier-free guidance가 classifier guidance나 GAN truncation과 유사하게 Inception Score와 FID 사이의 절충을 만들어낼 수 있다는 점이다.
+- 가장 큰 업적 trade-off 가능하게 함 
 
 우리는 제안한 classifier-free guidance를 **64×64** 및 **128×128** 해상도의 클래스 조건부 ImageNet 생성에 적용하였다.
 
@@ -513,19 +750,25 @@ $$
     
 - 두 극단 사이에서는 FID가 단조 감소하고, Inception Score가 단조 증가하는 **명확한 절충 곡선**이 나타났다.
 
+- w에 따라 IS와 FID 조절 가능하다.
+
 이 결과는 Dhariwal & Nichol (2021), Ho et al. (2021)과 비교해도 좋은 성능을 보이며, 특히 **128×128 모델은 당시 문헌에서 최고 성능**을 기록했다.
+- SOTA
 
 예를 들어 w=0.3일 때, 128×128 ImageNet에서 우리의 모델은 classifier-guided ADM-G보다 더 낮은 FID를 기록했다.
 
 또한 w=4.0에서는 BigGAN-deep이 최적 IS 수준에서 평가될 때보다 FID와 IS 모두에서 더 나은 성능을 보였다.
 
 샘플 시각화(Fig. 1, 3, 6~8)를 보면, guidance 강도가 커질수록 **샘플 다양성은 줄어들고 개별 샘플의 품질은 향상**되는 기대된 효과가 뚜렷하게 나타났다.
+- 원하는 방향성 나옴
 
 ---
 
 ## **4.2 무조건적 학습 확률 변화**
 
 Classifier-free guidance에서 학습 시 주요 하이퍼파라미터는 $p_{\text{uncond}}$, 즉 학습 중 무조건적(조건 없는) 훈련을 수행할 확률이다.
+
+- $p_{\text{uncond}}$ <= 하나의 네트워크 안에서 해당 파라미터를 통해 무조건 학습을 진행한다. 
 
 우리는 64×64 ImageNet에서 $p_{\text{uncond}} \in \{0.1, 0.2, 0.5\}$로 모델을 학습하여, 다양한 guidance 강도에서 샘플 품질을 비교했다.
 
@@ -538,12 +781,13 @@ Classifier-free guidance에서 학습 시 주요 하이퍼파라미터는 $p_{\t
 
 따라서 diffusion 모델의 용량 중 **상대적으로 작은 비율만 무조건적 학습에 사용해도 충분**하며, 효과적인 classifier-free guidance를 얻을 수 있음을 알 수 있다.
 
+- 적은 비율이 유리하다.
+
 이는 Dhariwal & Nichol이 classifier guidance에서 보고한 현상과도 유사하다. 즉, 작은 용량의 분류기만으로도 충분히 좋은 guidance 성능을 얻을 수 있었는데, classifier-free guidance에서도 같은 양상이 반복되었다.
 
 ---
 
 ## **4.3 샘플링 스텝 수 변화**
-
 
 샘플링 스텝 수 T는 확산 모델의 샘플 품질에 큰 영향을 준다고 알려져 있다.
 
@@ -559,7 +803,11 @@ Classifier-free guidance에서 학습 시 주요 하이퍼파라미터는 $p_{\t
 
 다만 중요한 점은, 우리의 방식은 샘플링 시 조건부 score와 무조건적 score를 각각 계산해야 하므로, 스텝마다 모델을 두 번 평가해야 한다.
 
-따라서 동일한 아키텍처를 사용한다면, 공정한 비교를 위해서는 T=128을 기준으로 보아야 하며, 이 경우에는 FID에서 ADM-G보다 다소 성능이 떨어진다.
+- 샘플링을 두가지 방식으로 해야한다. 샘플링 속도 느리거나 VRAM 낭비 
+
+따라서 동일한 아키텍처를 사용한다면, 공정한 비교를 위해서는 T=128을 기준으로 보아야 하며, 이 경우에는 FID에서 ADM-G보다 다소 성능이 떨어진다. 
+
+- 엄밀한 의미에서 스텝 수 를 맞추면 절반 낮춰야 한다. 256 -> 128
 
 # **5 DISCUSSION 번역**
 
@@ -575,13 +823,17 @@ Classifier-free guidance에서 학습 시 주요 하이퍼파라미터는 $p_{\t
 
 게다가 이 분류기는 노이즈가 섞인 $z_\sigma$에서 학습되어야 하기 때문에, 일반적인 사전학습된 분류기를 그대로 쓸 수 없다.
 
+- CG를 까면서(따로 학습해야하죠) 단순한데 효과적임을 강조한다. 
+
 ---
 
 Classifier-free guidance는, classifier guidance와 마찬가지로 Inception Score(IS)와 FID 사이에서 절충을 할 수 있지만, **추가 학습된 분류기 없이 순수 생성 모델만으로 가능하다**는 점을 보여주었다.
 
-  
+- Intro에서 이야기한 분류기 개입의 결과에 대한 의심도 벗어날 수 있다. 
 
 또한 우리의 확산 모델은 **제약이 없는 신경망(unconstrained neural networks)** 으로 파라미터화되기 때문에, score 추정값은 반드시 보존적 벡터장(conservative vector field)을 이루지 않는다.
+
+- ???
 
 즉, classifier guidance의 분류기 기울기와 달리, 우리의 classifier-free guided 샘플러가 따르는 step 방향은 분류기 기울기와 전혀 닮지 않는다.
 
@@ -597,6 +849,8 @@ Classifier-free guidance는 음의 score 항을 추가하여 무조건적 가능
 
 이러한 방식은 아직까지 탐구되지 않았으며, 다른 응용 분야에서도 사용될 수 있을 것이다.
 
+- ???
+
 ---
 
 Classifier-free guidance는 여기서 무조건적 모델 학습에 의존하고 있지만, 어떤 경우에는 이를 피할 수도 있다.
@@ -611,6 +865,8 @@ $$
 
 하지만 이는 가능한 클래스 수만큼 forward pass가 필요하기 때문에, 고차원 조건을 가진 상황에서는 비효율적이다.
 
+- 맞는 말
+
 ---
 
 Classifier-free guidance의 잠재적 단점 중 하나는 **샘플링 속도**다.
@@ -621,6 +877,8 @@ Classifier-free guidance의 잠재적 단점 중 하나는 **샘플링 속도**�
 
 이 문제는 아키텍처를 변경하여 네트워크의 후반부에서 조건 정보를 주입하는 방식을 사용하면 완화될 수 있지만, 이는 미래 연구로 남겨둔다.
 
+- 샘플링 단점 너무 눈에 보이는 단점 => 해결 방안 batch를 조건 과 비조건을 한번에 하나의 배치로 주고 샘플링하자. VRAM 두배 단점 하지만 속도 빨라짐 
+
 ---
 
 마지막으로, **샘플 품질을 높이는 대신 다양성을 줄이는** 모든 guidance 방법은, 다양성 감소가 실제로 허용 가능한지에 대한 문제에 직면한다.
@@ -628,6 +886,8 @@ Classifier-free guidance의 잠재적 단점 중 하나는 **샘플링 속도**�
 응용 분야에서 데이터의 일부가 과소대표(underrepresented)되는 경우, 다양성을 유지하는 것은 매우 중요하다.
 
 따라서 향후 연구에서는, 샘플 품질을 유지하면서도 샘플 다양성을 보존할 수 있는 방법을 탐구하는 것이 흥미로운 방향이 될 것이다.
+
+- 가능한가?? 
 
 # **6 CONCLUSION 번역**
 
@@ -644,3 +904,5 @@ Classifier-free guidance는 **classifier가 없는 classifier guidance**라고 �
 즉, 전혀 classifier gradient에 의존하지 않고도 동일한 성과를 달성할 수 있다.
 
 우리는 앞으로 classifier-free guidance가 **더 다양한 환경과 데이터 모달리티**에 적용되는 연구가 이루어지기를 기대한다.
+
+- CG 없이 모델의 결합만으로 FID와 IS trade-off 달성 
