@@ -571,11 +571,9 @@ Classifier-free guidance에서 학습 시 주요 하이퍼파라미터는 $p_{\t
 
 샘플링 시에는 조건부와 무조건적 score 추정을 **선형 결합**하는 또 다른 한 줄만 필요하다.
 
-  
-
 반면 classifier guidance는, 별도의 분류기를 학습해야 하므로 학습 파이프라인이 훨씬 복잡해진다.
 
-게다가 이 분류기는 노이즈가 섞인 z_\sigma에서 학습되어야 하기 때문에, 일반적인 사전학습된 분류기를 그대로 쓸 수 없다.
+게다가 이 분류기는 노이즈가 섞인 $z_\sigma$에서 학습되어야 하기 때문에, 일반적인 사전학습된 분류기를 그대로 쓸 수 없다.
 
 ---
 
@@ -583,7 +581,7 @@ Classifier-free guidance는, classifier guidance와 마찬가지로 Inception Sc
 
   
 
-또한 우리의 확산 모델은 **제약이 없는 신경망(unconstrained neural networks)**으로 파라미터화되기 때문에, score 추정값은 반드시 보존적 벡터장(conservative vector field)을 이루지 않는다.
+또한 우리의 확산 모델은 **제약이 없는 신경망(unconstrained neural networks)** 으로 파라미터화되기 때문에, score 추정값은 반드시 보존적 벡터장(conservative vector field)을 이루지 않는다.
 
 즉, classifier guidance의 분류기 기울기와 달리, 우리의 classifier-free guided 샘플러가 따르는 step 방향은 분류기 기울기와 전혀 닮지 않는다.
 
@@ -604,9 +602,9 @@ Classifier-free guidance는 음의 score 항을 추가하여 무조건적 가능
 Classifier-free guidance는 여기서 무조건적 모델 학습에 의존하고 있지만, 어떤 경우에는 이를 피할 수도 있다.
 
 만약 클래스 분포가 알려져 있고 클래스 개수가 적다면,
-
+$$
 \sum_c p(x \mid c)p(c) = p(x)
-
+$$
 관계를 이용하여 조건부 score들로부터 무조건적 score를 얻을 수 있다.
 
 이 경우, 명시적으로 무조건적 모델을 학습하지 않아도 된다.
