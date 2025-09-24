@@ -259,7 +259,7 @@ GAN의 특성을 닮아가고 있기 때문일 수도 있다.
 - FID 와 IS간의 trade-off란건 FID(다양성 치중) + IS(품질 치중) 이것의 밸런스이다.
 > [!note]- 추가설명 
 > **FID와 IS 정의 정리**  
->
+> &nbsp;
 > - **Inception Score (IS)**  
 >   - **목적**: 생성 이미지가 (1) 개별적으로는 분명한 클래스에 속하고, (2) 전체적으로는 다양한 클래스를 포함하는지 평가.  
 >   - **방법**:  
@@ -270,24 +270,23 @@ GAN의 특성을 닮아가고 있기 때문일 수도 있다.
 >        $$
 >        IS = \exp\Big( \mathbb{E}_x \big[ D_{KL}(p(y|x)\,\|\,p(y)) \big] \Big)
 >        $$  
->
+> &nbsp;
 > - **Fréchet Inception Distance (FID)**  
 >   - **목적**: 생성 이미지와 실제 이미지의 **분포 차이**를 측정.  
 >   - **방법**:  
 >     1. 생성/실제 이미지를 Inception v3의 feature space로 임베딩.  
->     2. 각 집합을 가우시안 \(\mathcal{N}(\mu, \Sigma)\)로 근사.  
+>     2. 각 집합을 가우시안 $(\mathcal{N}(\mu, \Sigma))$로 근사.  
 >     3. 두 가우시안의 Fréchet 거리 계산:  
 >        $$
 >        FID = \|\mu_r - \mu_g\|^2 + \text{Tr}\big(\Sigma_r + \Sigma_g - 2(\Sigma_r \Sigma_g)^{1/2}\big)
 >        $$  
 >        - $(\mu_r, \Sigma_r)$: 실제 데이터 평균/공분산  
 >        - $(\mu_g, \Sigma_g)$: 생성 데이터 평균/공분산  
->
+> &nbsp;
 > - **비교**  
 >   - **IS**: 생성 샘플 자체만 보고 평가 (분류기 확신 + 다양성).  
 >   - **FID**: 생성 분포 vs 실제 분포 직접 비교 (더 널리 사용).  
 >   - **공통점**: 둘 다 Inception 네트워크 기반이라, 분류기 편향 영향을 받을 수 있음.  
-
 
 실험 결과, classifier-free guidance는 순수 생성 확산 모델만으로도  
 다른 생성 모델들과 맞먹는 고충실도(high-fidelity) 샘플을 합성할 수 있음을 보여준다.
@@ -299,7 +298,9 @@ GAN의 특성을 닮아가고 있기 때문일 수도 있다.
 $$
 데이터 x \sim p(x)를 샘플링하고, 하이퍼파라미터 \sigma_{\min} < \sigma_{\max} \in \mathbb{R}에 대해
 $$
-$$z = \{z_\sigma \mid \sigma \in [\sigma_{\min}, \sigma_{\max}]\}라 하면,$$
+$$
+z = \{z_\sigma \mid \sigma \in [\sigma_{\min}, \sigma_{\max}]\}라 하면,
+$$
 $$
 순방향 과정 q(z \mid x)는 분산 보존(variance-preserving) 마르코프 과정으로 정의된다 (Sohl-Dickstein et al., 2015):
 $$
