@@ -34,44 +34,44 @@ tags:
 - classifier라는 이야기를 처음에 시작하고 "조건부 확산 모델", "모드 커버리지", "샘플 충실도", "저온 샘플링", "절단" 놀랍게도 다 모르는 단어이다. 이걸 조금은 이해하고 넘어가야겠다.
 
 > [!note]- 주요 단어 정의
-**모드 커버리지 (Mode coverage)**
-"모드"는 데이터 분포에서 자주 등장하는 패턴이나 범주를 뜻해요.
-예를 들어, 고양이·강아지·새 이미지를 학습했다면, 각 동물 종류가 하나의 "모드"가 됩니다.
-모드 커버리지는 모델이 모든 다양한 모드를 잘 커버하는지, 즉 다양한 패턴을 빠짐없이 생성하는 능력을 말합니다.  
+> **모드 커버리지 (Mode coverage)**
+> "모드"는 데이터 분포에서 자주 등장하는 패턴이나 범주를 뜻해요.
+> 예를 들어, 고양이·강아지·새 이미지를 학습했다면, 각 동물 종류가 하나의 "모드"가 됩니다.
+> 모드 커버리지는 모델이 모든 다양한 모드를 잘 커버하는지, 즉 다양한 패턴을 빠짐없이 생성하는 능력을 말합니다.  
 >
-**샘플 충실도 (Sample fidelity)**
-생성된 데이터(예: 이미지)가 얼마나 진짜 같은지, 품질이 높은지를 나타내는 개념이에요.
-충실도가 높으면 생성 이미지가 현실적인데, 대신 다양성이 줄어들 수도 있습니다.  
+> **샘플 충실도 (Sample fidelity)**
+> 생성된 데이터(예: 이미지)가 얼마나 진짜 같은지, 품질이 높은지를 나타내는 개념이에요.
+> 충실도가 높으면 생성 이미지가 현실적인데, 대신 다양성이 줄어들 수도 있습니다.  
 >
-**저온 샘플링 (Low temperature sampling)**
-샘플링할 때 확률 분포의 "온도(temperature)" 파라미터를 낮추면, 모델이 더 안전하고 평균적인 결과를 내요.
-즉, 더 선명하지만 다양성은 줄어드는 효과가 있습니다.  
+> **저온 샘플링 (Low temperature sampling)**
+> 샘플링할 때 확률 분포의 "온도(temperature)" 파라미터를 낮추면, 모델이 더 안전하고 평균적인 결과를 내요.
+> 즉, 더 선명하지만 다양성은 줄어드는 효과가 있습니다.  
 >
-**절단 (Truncation)**
-샘플링 과정에서 확률이 낮은 후보를 잘라내는 방법입니다.
-흔히 GAN 같은 생성 모델에서 "품질을 높이기 위해 극단적이거나 이상한 샘플을 버리는 기법"이에요.  
+> **절단 (Truncation)**
+> 샘플링 과정에서 확률이 낮은 후보를 잘라내는 방법입니다.
+> 흔히 GAN 같은 생성 모델에서 "품질을 높이기 위해 극단적이거나 이상한 샘플을 버리는 기법"이에요.  
 >
-**점수 추정치 (Score estimate)**
-확산 모델은 데이터의 확률분포의 기울기(gradient), 즉 "점수(score)"를 학습합니다.
-쉽게 말해, "노이즈가 낀 데이터를 원래 데이터 쪽으로 조금 더 움직일 방향"을 알려주는 벡터입니다.  
+> **점수 추정치 (Score estimate)**
+> 확산 모델은 데이터의 확률분포의 기울기(gradient), 즉 "점수(score)"를 학습합니다.
+> 쉽게 말해, "노이즈가 낀 데이터를 원래 데이터 쪽으로 조금 더 움직일 방향"을 알려주는 벡터입니다.  
 >
-**분류기의 그래디언트 (Gradient from classifier)**
-만약 우리가 조건부 이미지(예: "고양이")를 생성하고 싶다면, 분류기가 '이건 고양이일 확률'을 높이는 방향을 알려줍니다.
-그 방향(gradient)을 점수 추정치에 더해주면, 원하는 조건에 맞는 이미지를 얻기 쉬워집니다.  
+> **분류기의 그래디언트 (Gradient from classifier)**
+> 만약 우리가 조건부 이미지(예: "고양이")를 생성하고 싶다면, 분류기가 '이건 고양이일 확률'을 높이는 방향을 알려줍니다.
+> 그 방향(gradient)을 점수 추정치에 더해주면, 원하는 조건에 맞는 이미지를 얻기 쉬워집니다.  
 >
-**분류기 가이던스 (Classifier guidance)**
-확산 모델이 학습한 "노이즈 제거 방향(점수)"에, 분류기의 "조건 강화 방향"을 더해서 샘플 품질을 조정하는 방법입니다.
-단점: 별도의 분류기 모델을 추가로 학습해야 한다는 점.  
+> **분류기 가이던스 (Classifier guidance)**
+> 확산 모델이 학습한 "노이즈 제거 방향(점수)"에, 분류기의 "조건 강화 방향"을 더해서 샘플 품질을 조정하는 방법입니다.
+> 단점: 별도의 분류기 모델을 추가로 학습해야 한다는 점.  
 >
-**무조건적 모델 (Unconditional model)**
-어떤 조건도 주지 않고 "그냥 데이터 분포 전체"를 학습한 모델입니다.
-조건부 모델 (Conditional model)
-특정 조건(예: "고양이" 라벨)을 주었을 때만 해당 데이터 분포를 학습하는 모델입니다.  
+> **무조건적 모델 (Unconditional model)**
+> 어떤 조건도 주지 않고 "그냥 데이터 분포 전체"를 학습한 모델입니다.
+> 조건부 모델 (Conditional model)
+> 특정 조건(예: "고양이" 라벨)을 주었을 때만 해당 데이터 분포를 학습하는 모델입니다.  
 >
-**분류기 없는 가이던스 (Classifier-Free Guidance, CFG)**
-"분류기 없이도 가이던스가 가능할까?"라는 발상에서 나온 방법.
-무조건적 모델과 조건부 모델을 하나의 모델에서 동시에 학습한 뒤, 두 점수 추정치를 선형 결합합니다.
-결과적으로 별도의 분류기 없이도 샘플 품질 vs 다양성의 균형을 조절할 수 있습니다.  
+> **분류기 없는 가이던스 (Classifier-Free Guidance, CFG)**
+> "분류기 없이도 가이던스가 가능할까?"라는 발상에서 나온 방법.
+> 무조건적 모델과 조건부 모델을 하나의 모델에서 동시에 학습한 뒤, 두 점수 추정치를 선형 결합합니다.
+> 결과적으로 별도의 분류기 없이도 샘플 품질 vs 다양성의 균형을 조절할 수 있습니다.  
 
 **요약하면,**
 분류기 가이던스: 확산 모델 + 추가 분류기 필요
@@ -138,7 +138,7 @@ Dhariwal & Nichol (2021)은 추가로 학습된 분류기를 이용하여 확산
 
 > [!note]- 추가설명
 > 
-![](https://blog.kakaocdn.net/dna/MPDQN/btsQK9SljWJ/AAAAAAAAAAAAAAAAAAAAALe2Fv0JlC9gGoTU1WMk5dNtqZrfADUcaGn-HOYgQwSF/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1759244399&allow_ip=&allow_referer=&signature=E7SRzPXl4sa2AgLpsOBoU4BqOZ4%3D)
+> ![](https://blog.kakaocdn.net/dna/MPDQN/btsQK9SljWJ/AAAAAAAAAAAAAAAAAAAAALe2Fv0JlC9gGoTU1WMk5dNtqZrfADUcaGn-HOYgQwSF/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1759244399&allow_ip=&allow_referer=&signature=E7SRzPXl4sa2AgLpsOBoU4BqOZ4%3D)
 
 ---
 
@@ -184,4 +184,105 @@ GAN의 특성을 닮아가고 있기 때문일 수도 있다.
 다른 생성 모델들과 맞먹는 고충실도(high-fidelity) 샘플을 합성할 수 있음을 보여준다.
 
 
+# **2. Background 번역**
 
+우리는 연속 시간(continuous time)에서 확산 모델을 학습한다(Song et al., 2021b; Chen et al., 2021; Kingma et al., 2021).
+$$
+데이터 x \sim p(x)를 샘플링하고, 하이퍼파라미터 \sigma_{\min} < \sigma_{\max} \in \mathbb{R}에 대해
+$$
+$$z = \{z_\sigma \mid \sigma \in [\sigma_{\min}, \sigma_{\max}]\}라 하면,$$
+$$
+순방향 과정 q(z \mid x)는 분산 보존(variance-preserving) 마르코프 과정으로 정의된다 (Sohl-Dickstein et al., 2015):
+$$
+  
+$$
+q(z_\sigma \mid x) = \mathcal{N}(\alpha_\sigma x, \sigma^2_\sigma I), \quad \alpha^2_\sigma = \frac{1}{1 + e^{-\sigma}}, \quad \sigma^2_\sigma = 1 - \alpha^2_\sigma \tag{1}
+$$
+  
+$$
+q(z_\sigma \mid z_{\sigma’}) = \mathcal{N}\left(\frac{\alpha_\sigma}{\alpha_{\sigma’}} z_{\sigma’}, \, \sigma^2_{\sigma \mid \sigma’} I\right), \quad \sigma < \sigma’, \quad \sigma^2_{\sigma \mid \sigma’} = (1 - e^{\sigma - \sigma’}) \sigma^2_\sigma \tag{2}
+$$
+  
+$$
+여기서 p(z) (또는 p(z_\sigma))는 x \sim p(x)와 z \sim q(z \mid x)일 때의 주변 분포를 의미한다.
+$$
+또한 $$\sigma = \log \alpha^2_\sigma / \sigma^2_\sigma$$로 정의되므로, $$\sigma는 z_\sigma의 **$$신호 대 잡음비(signal-to-noise ratio, SNR)의 로그 값**으로 해석할 수 있고, 순방향 과정은 $$\sigma$$가 감소하는 방향으로 진행된다.
+
+---
+
+데이터 x에 조건을 두면, 순방향 과정은 다음의 전이로 역으로 표현될 수 있다:
+
+  
+$$
+q(z_{\sigma’} \mid z_\sigma, x) = \mathcal{N}(\tilde{\mu}{\sigma’|\sigma}(z\sigma, x), \, \tilde{\sigma}^2_{\sigma’|\sigma} I) \tag{3}
+$$
+  
+
+여기서
+
+  
+$$
+\tilde{\mu}{\sigma’|\sigma}(z\sigma, x) = e^{-(\sigma’-\sigma)} \left(\frac{\alpha_{\sigma’}}{\alpha_\sigma}\right) z_\sigma + \left(1 - e^{-(\sigma’-\sigma)}\right)\alpha_{\sigma’} x
+$$
+  
+$$
+\tilde{\sigma}^2_{\sigma’|\sigma} = \left(1 - e^{-(\sigma’-\sigma)}\right) \sigma^2_{\sigma’}
+$$
+---
+
+역방향 생성 과정은 $$p_\theta(z_{\sigma_{\min}}) = \mathcal{N}(0, I)$$에서 시작한다. 전이는 다음과 같이 정의된다:
+
+  
+$$
+p_\theta(z_{\sigma’} \mid z_\sigma) = \mathcal{N}\Big(\tilde{\mu}{\sigma’|\sigma}(z\sigma, x_\theta(z_\sigma)), \, (\tilde{\sigma}^2_{\sigma’|\sigma})^{1-v} (\sigma^2_{\sigma|\sigma’})^v \Big) \tag{4}
+$$
+  
+
+여기서 v는 고정된 하이퍼파라미터다.
+
+  
+
+샘플링 시에는 $$\sigma_{\min} = \sigma_1 < \cdots < \sigma_T = \sigma_{\max}$$의 증가하는 시퀀스를 따라 이 전이를 적용한다. 즉, Sohl-Dickstein et al. (2015), Ho et al. (2020)의 **이산 시간 조상 샘플러(ancestral sampler)를 따른다.
+$$모델 x_\theta가 정확하다면, T \to \infty일 때 $$샘플은 p(z)에 해당하는 확률미분방정식(SDE)의 해와 동일하게 분포하며 (Song et al., 2021b), 이를 $$p_\theta(z)$$라 표기한다.
+
+---
+
+모델의 평균 추정은 $$x_\theta(z_\sigma) \approx x$$를 $$q(z_{\sigma’} \mid z_\sigma, x)$$에 대입함으로써 얻어진다 (Ho et al., 2020; Kingma et al., 2021).
+
+$$여기서 x_\theta는 입력으로 \sigma도 받지만, 표기 단순화를 위해 생략한다.$$
+
+  
+
+우리는 **epsilon-예측** 방식으로 $$x_\theta$$를 파라미터화한다 (Ho et al., 2020):
+
+  
+$$
+x_\theta(z_\sigma) = \frac{z_\sigma - \sigma \epsilon_\theta(z_\sigma)}{\alpha_\sigma}
+$$
+  
+
+학습 목표는 다음과 같다:
+
+  
+$$
+\mathbb{E}{\epsilon, \sigma} \Big[ \| \epsilon\theta(z_\sigma) - \epsilon \|_2^2 \Big] \tag{5}
+$$
+  
+$$
+여기서 \epsilon \sim \mathcal{N}(0, I), z_\sigma = \alpha_\sigma x + \sigma \epsilon, \sigma는 분포 p(\sigma)에서 샘플링한다.
+$$
+---
+
+이 손실은 다중 잡음 스케일에서의 **denoising score matching** (Vincent, 2011; Hyvärinen & Dayan, 2005)에 해당한다.
+
+또한 $$p(\sigma)$$가 균일 분포일 경우, 목적 함수는 주변 로그우도 $$\log p(x)$$에 대한 변분 하한(variational lower bound)에 비례한다 (Kingma et al., 2021).
+
+  
+
+비균일한 $$p(\sigma)$$를 사용할 경우, 이는 샘플 품질을 개선하기 위해 가중치를 조정할 수 있는 **가중 변분 하한(weighted variational lower bound)**으로 해석할 수 있다 (Ho et al., 2020).
+
+---
+
+조건부 생성 모델링(conditional generative modeling)의 경우, 데이터 x는 조건 정보 c(예: 클래스 레이블)과 함께 주어진다.
+
+이때 유일한 수정은 역방향 함수 근사기가 c를 추가 입력으로 받는 것뿐이다. 즉, $$\epsilon_\theta(z_\sigma, c)$$를 사용한다.
