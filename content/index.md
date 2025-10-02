@@ -10,6 +10,9 @@ tags:
 
 논문을 읽고 이해한 만큼만 담아 두는 곳입니다. 주로 AI/ML, 컴퓨터 비전, NLP를 다룹니다.
 
+매주 1개의 review, 2개의 summary가 올라옵니다. 
+
+논문 읽기 사이트: https://www.themoonlight.io/ko
 논문 번역 사이트: https://www.deepl.com/
 
 ## 보는 방법
