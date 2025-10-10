@@ -146,7 +146,7 @@ Dhariwal & Nichol (2021)은 추가로 학습된 분류기를 이용하여 확산
 
 > [!note]- 추가설명
 > 
-> ![](https://blog.kakaocdn.net/dna/MPDQN/btsQK9SljWJ/AAAAAAAAAAAAAAAAAAAAALe2Fv0JlC9gGoTU1WMk5dNtqZrfADUcaGn-HOYgQwSF/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1759244399&allow_ip=&allow_referer=&signature=E7SRzPXl4sa2AgLpsOBoU4BqOZ4%3D)
+> ![[assets/Pasted image 20251006083402.png]]
 
 ---
 

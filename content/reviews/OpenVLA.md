@@ -1,10 +1,11 @@
 ---
-title: "[리뷰 제목]"
-description: "[핵심 한 줄 요약]"
-tags: [review, topic, year-2025]
-year: 2025
-status: drafting  # drafting, complete
-links: [arXiv 링크, 프로젝트 링크]
+title: "OpenVLA: An Open-Source Vision-Language-Action Model"
+year: 2024
+description:
+arxiv:
+github:
+tags:
+  - year-2025
 ---
 
 # [리뷰 제목]

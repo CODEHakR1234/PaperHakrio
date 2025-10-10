@@ -1,12 +1,10 @@
 ---
-title: 2025 Read paper List
-description: Papers I noted in 2025
+title: Diffusion
+description: Paper read in 2025
 tags:
   - papers
   - year-2025
 ---
-
-여기에는 2025년에 읽고 메모한 논문을 둡니다. 
 
 - Denoising Diffusion Probabilistic Models (DDPM)_ — Jonathan Ho, Ajay Jain, Pieter Abbeel (2020)
     
@@ -35,4 +33,6 @@ tags:
 - _A Neural Algorithm of Artistic Style_ — Leon A. Gatys, Alexander S. Ecker, Matthias Bethge (2015)
     
     [arXiv:1508.06576](https://arxiv.org/abs/1508.06576)
+
+
 
