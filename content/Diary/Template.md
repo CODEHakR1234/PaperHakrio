@@ -1,4 +1,5 @@
 ---
+title: template
 date: 2025-10-10
 tags:
   - CV
